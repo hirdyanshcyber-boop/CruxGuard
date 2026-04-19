@@ -67,3 +67,23 @@ python main.py --ip 8.8.8.8 --role analyst
 
 Every decision record contains fields mapped to APRA CPS 234 clauses:
 `information_asset`, `control_tested`, `third_party_source`, `incident_class`, `decision_timestamp`, `board_reportable`.
+
+## Adversarial testing
+
+CruxGuard ships with a five-category adversarial harness covering direct
+prompt injection, indirect injection, role-play jailbreak, confidence
+manipulation, and multi-turn context poisoning.
+
+```bash
+python scripts/run_adversarial.py              # default sweep
+python scripts/run_adversarial.py --quick      # smoke test
+python scripts/run_adversarial.py --temperatures 0.1 0.3 --rounds 3
+```
+
+The runner emits:
+
+- `tests/adversarial/out/adversarial_results.csv` — one row per attempt
+- `tests/adversarial/out/adversarial_metrics.json` — aggregated metrics
+- `RESULTS.md` — human-readable report at the repo root
+
+See [RESULTS.md](./RESULTS.md) for the latest measured resistance rates.
