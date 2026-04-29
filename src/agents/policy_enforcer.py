@@ -25,6 +25,33 @@ def policy_enforcer_node(state: ReviewState) -> ReviewState:
     role = state.get("role", "guest")
     action = state.get("action", "")
     severity = state.get("severity", "low")
+    injection_detected = state.get("injection_detected", False)
+
+    # Injection detected upstream means the request is adversarial — deny
+    # unconditionally regardless of role or severity. RBAC/ABAC checks are
+    # still evaluated for the audit record but cannot override this.
+    if injection_detected:
+        state["verdict"] = "deny"
+        rationale = (
+            f"AUTO-DENY: prompt injection detected upstream. "
+            f"role={role} action={action} severity={severity}"
+        )
+        finding: AgentFinding = {
+            "agent": "PolicyEnforcerAgent",
+            "decision": "deny",
+            "confidence": 1.0,
+            "rationale": rationale,
+            "evidence": {
+                "injection_detected": True,
+                "rbac_ok": None,
+                "abac_ok": None,
+                "permitted_actions": sorted(_ROLE_MATRIX.get(role, set())),
+            },
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "latency_ms": (time.perf_counter() - start) * 1000,
+        }
+        state["findings"].append(finding)
+        return state
 
     permitted_actions = _ROLE_MATRIX.get(role, set())
     rbac_ok = action in permitted_actions
