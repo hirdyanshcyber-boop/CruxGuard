@@ -50,6 +50,7 @@ class ReviewState(TypedDict, total=False):
     # --- control flow flags ---
     ip_valid: bool
     halt_reason: str | None
+    injection_detected: bool
 
     # --- LLM transcript for audit ---
     messages: Annotated[list, add_messages]
@@ -75,5 +76,6 @@ def new_state(
         firewall_command=None,
         ip_valid=False,
         halt_reason=None,
+        injection_detected=False,
         messages=[],
     )
